@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <string>
-#include "Lexer.h"
-
 #include <unordered_map>
+
+#include "Lexer.h"
 
 using namespace std;
 
@@ -26,6 +26,17 @@ private:
     void Advance();
 
     void ParseVariableDeclaration();
+    void ParseAssignment();
     void ParseExpose();
+    void ParseTight();
+    void ParseStrap();
+
     double ParseExpression();
+    double ParseTerm();
+    double ParseFactor();
+
+    bool ParseCondition();
+
+    void ExecuteBlock();
+    void SkipBlock();
 };

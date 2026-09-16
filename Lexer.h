@@ -18,11 +18,22 @@ enum class TokenType
     NUMBER,
 
     EQUALS,
+    EQUAL_EQUAL,
+    NOT_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    LESS,
+    LESS_EQUAL,
+
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+
     LEFT_PAREN,
     RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
-    PLUS,
 
     END_OF_FILE
 };

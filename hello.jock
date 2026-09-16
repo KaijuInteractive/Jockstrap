@@ -1,2 +1,11 @@
-briefs x = 10
-expose x + 5
+briefs x = 1
+
+expose "Strapping in..."
+
+strap (x < 6)
+{
+    expose x
+    x = x + 1
+}
+
+expose "Strap released."

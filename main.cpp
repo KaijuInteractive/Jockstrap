@@ -28,6 +28,16 @@ string TokenTypeToString(TokenType type)
     case TokenType::RIGHT_BRACE: return "RIGHT_BRACE";
     case TokenType::END_OF_FILE: return "END_OF_FILE";
     case TokenType::PLUS:        return "PLUS";
+    case TokenType::MINUS:       return "MINUS";
+    case TokenType::STAR:        return "STAR";
+    case TokenType::SLASH:       return "SLASH";
+    case TokenType::EQUAL_EQUAL:   return "EQUAL_EQUAL";
+    case TokenType::NOT_EQUAL:     return "NOT_EQUAL";
+    case TokenType::GREATER:       return "GREATER";
+    case TokenType::GREATER_EQUAL: return "GREATER_EQUAL";
+    case TokenType::LESS:          return "LESS";
+    case TokenType::LESS_EQUAL:    return "LESS_EQUAL";
+
     }
 
     return "UNKNOWN";

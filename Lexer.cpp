@@ -25,18 +25,19 @@ vector<Token> Lexer::Tokenize()
         // String literals
         if (current == '"')
         {
-            position++; // Skip opening quote
+            position++;
 
             string value;
 
-            while (position < source.length() && source[position] != '"')
+            while (position < source.length() &&
+                source[position] != '"')
             {
                 value += source[position];
                 position++;
             }
 
-            // Skip closing quote
-            if (position < source.length() && source[position] == '"')
+            if (position < source.length() &&
+                source[position] == '"')
             {
                 position++;
             }
@@ -46,23 +47,42 @@ vector<Token> Lexer::Tokenize()
         }
 
         // Numbers
-        if (isdigit(static_cast<unsigned char>(current)))
+        if (isdigit(static_cast<unsigned char>(current)) ||
+            (current == '.' &&
+                position + 1 < source.length() &&
+                isdigit(static_cast<unsigned char>(source[position + 1]))))
         {
             string number;
+            bool foundDecimal = false;
 
-            while (position < source.length() &&
-                isdigit(static_cast<unsigned char>(source[position])))
+            while (position < source.length())
             {
-                number += source[position];
-                position++;
+                char c = source[position];
+
+                if (isdigit(static_cast<unsigned char>(c)))
+                {
+                    number += c;
+                    position++;
+                }
+                else if (c == '.' && !foundDecimal)
+                {
+                    foundDecimal = true;
+                    number += c;
+                    position++;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             tokens.push_back({ TokenType::NUMBER, number });
             continue;
         }
 
-        // Words: keywords and identifiers
-        if (isalpha(static_cast<unsigned char>(current)) || current == '_')
+        // Keywords and identifiers
+        if (isalpha(static_cast<unsigned char>(current)) ||
+            current == '_')
         {
             string word;
 
@@ -90,11 +110,56 @@ vector<Token> Lexer::Tokenize()
             continue;
         }
 
-        // Single-character symbols
+        // Two-character comparison operators
 
-        if (current == '+')
+        if (current == '=' &&
+            position + 1 < source.length() &&
+            source[position + 1] == '=')
         {
-            tokens.push_back({ TokenType::PLUS, "+" });
+            tokens.push_back({ TokenType::EQUAL_EQUAL, "==" });
+            position += 2;
+            continue;
+        }
+
+        if (current == '!' &&
+            position + 1 < source.length() &&
+            source[position + 1] == '=')
+        {
+            tokens.push_back({ TokenType::NOT_EQUAL, "!=" });
+            position += 2;
+            continue;
+        }
+
+        if (current == '>' &&
+            position + 1 < source.length() &&
+            source[position + 1] == '=')
+        {
+            tokens.push_back({ TokenType::GREATER_EQUAL, ">=" });
+            position += 2;
+            continue;
+        }
+
+        if (current == '<' &&
+            position + 1 < source.length() &&
+            source[position + 1] == '=')
+        {
+            tokens.push_back({ TokenType::LESS_EQUAL, "<=" });
+            position += 2;
+            continue;
+        }
+
+        // Single-character operators
+
+        if (current == '>')
+        {
+            tokens.push_back({ TokenType::GREATER, ">" });
+            position++;
+            continue;
+        }
+
+        if (current == '<')
+        {
+            tokens.push_back({ TokenType::LESS, "<" });
             position++;
             continue;
         }
@@ -105,6 +170,36 @@ vector<Token> Lexer::Tokenize()
             position++;
             continue;
         }
+
+        if (current == '+')
+        {
+            tokens.push_back({ TokenType::PLUS, "+" });
+            position++;
+            continue;
+        }
+
+        if (current == '-')
+        {
+            tokens.push_back({ TokenType::MINUS, "-" });
+            position++;
+            continue;
+        }
+
+        if (current == '*')
+        {
+            tokens.push_back({ TokenType::STAR, "*" });
+            position++;
+            continue;
+        }
+
+        if (current == '/')
+        {
+            tokens.push_back({ TokenType::SLASH, "/" });
+            position++;
+            continue;
+        }
+
+        // Grouping
 
         if (current == '(')
         {
@@ -134,6 +229,7 @@ vector<Token> Lexer::Tokenize()
             continue;
         }
 
+        // Unknown character
         position++;
     }
 
