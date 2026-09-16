@@ -108,13 +108,6 @@ void Parser::ParseVariableDeclaration()
 
         variables[variableName] = value;
 
-        cout << "Created briefs: "
-            << variableName
-            << " = \""
-            << value
-            << "\""
-            << endl;
-
         return;
     }
 
@@ -123,11 +116,6 @@ void Parser::ParseVariableDeclaration()
 
     numberVariables[variableName] = value;
 
-    cout << "Created briefs: "
-        << variableName
-        << " = "
-        << value
-        << endl;
 }
 
 void Parser::ParseAssignment()
