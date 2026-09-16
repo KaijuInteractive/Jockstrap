@@ -22,6 +22,58 @@ vector<Token> Lexer::Tokenize()
             continue;
         }
 
+        // String literals
+        if (current == '"')
+        {
+            position++; // Skip opening quote
+
+            string value;
+
+            while (position < source.length() && source[position] != '"')
+            {
+                value += source[position];
+                position++;
+            }
+
+            // Skip closing quote
+            if (position < source.length() && source[position] == '"')
+            {
+                position++;
+            }
+
+            tokens.push_back({ TokenType::STRING, value });
+            continue;
+        }
+
+        // Words: keywords and identifiers
+        if (isalpha(static_cast<unsigned char>(current)) || current == '_')
+        {
+            string word;
+
+            while (position < source.length() &&
+                (isalnum(static_cast<unsigned char>(source[position])) ||
+                    source[position] == '_'))
+            {
+                word += source[position];
+                position++;
+            }
+
+            if (word == "briefs")
+                tokens.push_back({ TokenType::BRIEFS, word });
+            else if (word == "bulge")
+                tokens.push_back({ TokenType::BULGE, word });
+            else if (word == "tight")
+                tokens.push_back({ TokenType::TIGHT, word });
+            else if (word == "strap")
+                tokens.push_back({ TokenType::STRAP, word });
+            else if (word == "expose")
+                tokens.push_back({ TokenType::EXPOSE, word });
+            else
+                tokens.push_back({ TokenType::IDENTIFIER, word });
+
+            continue;
+        }
+
         // Single-character symbols
         if (current == '=')
         {
