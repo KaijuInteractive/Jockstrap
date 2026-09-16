@@ -1,6 +1,7 @@
 #include "Parser.h"
 
 #include <iostream>
+#include <limits>
 
 Parser::Parser(const vector<Token>& tokens)
     : tokens(tokens)
@@ -10,6 +11,16 @@ Parser::Parser(const vector<Token>& tokens)
 Token Parser::CurrentToken()
 {
     return tokens[position];
+}
+
+Token Parser::PeekToken()
+{
+    if (position + 1 < tokens.size())
+    {
+        return tokens[position + 1];
+    }
+
+    return tokens.back();
 }
 
 void Parser::Advance()
@@ -32,6 +43,10 @@ void Parser::Parse()
         {
             ParseExpose();
         }
+        else if (CurrentToken().type == TokenType::GRAB)
+        {
+            ParseGrab();
+        }
         else if (CurrentToken().type == TokenType::TIGHT)
         {
             ParseTight();
@@ -40,9 +55,20 @@ void Parser::Parse()
         {
             ParseStrap();
         }
+        else if (CurrentToken().type == TokenType::PACKAGE)
+        {
+            ParsePackage();
+        }
         else if (CurrentToken().type == TokenType::IDENTIFIER)
         {
-            ParseAssignment();
+            if (PeekToken().type == TokenType::LEFT_PAREN)
+            {
+                ParseFunctionCall();
+            }
+            else
+            {
+                ParseAssignment();
+            }
         }
         else
         {
@@ -53,7 +79,6 @@ void Parser::Parse()
 
 void Parser::ParseVariableDeclaration()
 {
-    // Skip "briefs"
     Advance();
 
     if (CurrentToken().type != TokenType::IDENTIFIER)
@@ -119,13 +144,15 @@ void Parser::ParseAssignment()
 
     Advance();
 
-    // Existing string variable
     if (variables.find(variableName) != variables.end())
     {
         if (CurrentToken().type != TokenType::STRING)
         {
             cout << "WARDROBE MALFUNCTION!" << endl;
-            cout << "Expected a string for " << variableName << "." << endl;
+            cout << "Expected a string for "
+                << variableName
+                << "."
+                << endl;
             return;
         }
 
@@ -135,11 +162,10 @@ void Parser::ParseAssignment()
         return;
     }
 
-    // Existing numeric variable
-    if (numberVariables.find(variableName) != numberVariables.end())
+    if (numberVariables.find(variableName) !=
+        numberVariables.end())
     {
         double value = ParseExpression();
-
         numberVariables[variableName] = value;
 
         return;
@@ -151,7 +177,6 @@ void Parser::ParseAssignment()
 
 void Parser::ParseExpose()
 {
-    // Skip "expose"
     Advance();
 
     // Literal string
@@ -179,6 +204,67 @@ void Parser::ParseExpose()
     double result = ParseExpression();
 
     cout << result << endl;
+}
+
+void Parser::ParseGrab()
+{
+    // Skip "grab"
+    Advance();
+
+    if (CurrentToken().type != TokenType::IDENTIFIER)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected a briefs name after grab." << endl;
+        return;
+    }
+
+    string variableName = CurrentToken().value;
+    Advance();
+
+    // String input
+    if (variables.find(variableName) != variables.end())
+    {
+        string value;
+
+        getline(cin >> ws, value);
+
+        variables[variableName] = value;
+
+        return;
+    }
+
+    // Numeric input
+    if (numberVariables.find(variableName) !=
+        numberVariables.end())
+    {
+        double value;
+
+        if (!(cin >> value))
+        {
+            cout << "WARDROBE MALFUNCTION!" << endl;
+            cout << "That package requires a number." << endl;
+
+            cin.clear();
+            cin.ignore(
+                numeric_limits<streamsize>::max(),
+                '\n');
+
+            return;
+        }
+
+        numberVariables[variableName] = value;
+
+        cin.ignore(
+            numeric_limits<streamsize>::max(),
+            '\n');
+
+        return;
+    }
+
+    cout << "WARDROBE MALFUNCTION!" << endl;
+    cout << "Unknown briefs: "
+        << variableName
+        << endl;
 }
 
 double Parser::ParseExpression()
@@ -227,7 +313,8 @@ double Parser::ParseTerm()
             if (right == 0)
             {
                 cout << "WARDROBE MALFUNCTION!" << endl;
-                cout << "Division by zero would tear the fabric of reality."
+                cout << "Division by zero would tear the "
+                    << "fabric of reality."
                     << endl;
 
                 return 0;
@@ -242,7 +329,6 @@ double Parser::ParseTerm()
 
 double Parser::ParseFactor()
 {
-    // Number
     if (CurrentToken().type == TokenType::NUMBER)
     {
         double value = stod(CurrentToken().value);
@@ -251,13 +337,13 @@ double Parser::ParseFactor()
         return value;
     }
 
-    // Numeric variable
     if (CurrentToken().type == TokenType::IDENTIFIER)
     {
         string variableName = CurrentToken().value;
         Advance();
 
-        if (numberVariables.find(variableName) != numberVariables.end())
+        if (numberVariables.find(variableName) !=
+            numberVariables.end())
         {
             return numberVariables[variableName];
         }
@@ -270,7 +356,6 @@ double Parser::ParseFactor()
         return 0;
     }
 
-    // Parenthesized expression
     if (CurrentToken().type == TokenType::LEFT_PAREN)
     {
         Advance();
@@ -290,16 +375,15 @@ double Parser::ParseFactor()
         return value;
     }
 
-    // Unary minus
     if (CurrentToken().type == TokenType::MINUS)
     {
         Advance();
-
         return -ParseFactor();
     }
 
     cout << "WARDROBE MALFUNCTION!" << endl;
-    cout << "Expected a number, variable, or expression." << endl;
+    cout << "Expected a number, variable, or expression."
+        << endl;
 
     return 0;
 }
@@ -312,7 +396,10 @@ bool Parser::ParseCondition()
 
     if (comparison != TokenType::GREATER &&
         comparison != TokenType::LESS &&
-        comparison != TokenType::EQUAL_EQUAL)
+        comparison != TokenType::EQUAL_EQUAL &&
+        comparison != TokenType::NOT_EQUAL &&
+        comparison != TokenType::GREATER_EQUAL &&
+        comparison != TokenType::LESS_EQUAL)
     {
         cout << "WARDROBE MALFUNCTION!" << endl;
         cout << "Expected comparison operator." << endl;
@@ -325,21 +412,25 @@ bool Parser::ParseCondition()
     double right = ParseExpression();
 
     if (comparison == TokenType::GREATER)
-    {
         return left > right;
-    }
 
     if (comparison == TokenType::LESS)
-    {
         return left < right;
-    }
+
+    if (comparison == TokenType::GREATER_EQUAL)
+        return left >= right;
+
+    if (comparison == TokenType::LESS_EQUAL)
+        return left <= right;
+
+    if (comparison == TokenType::NOT_EQUAL)
+        return left != right;
 
     return left == right;
 }
 
 void Parser::ParseTight()
 {
-    // Skip "tight"
     Advance();
 
     if (CurrentToken().type != TokenType::LEFT_PAREN)
@@ -407,10 +498,6 @@ void Parser::ParseTight()
 
 void Parser::ParseStrap()
 {
-    // Save where the strap statement begins.
-    size_t strapPosition = position;
-
-    // Skip "strap"
     Advance();
 
     if (CurrentToken().type != TokenType::LEFT_PAREN)
@@ -422,10 +509,8 @@ void Parser::ParseStrap()
 
     Advance();
 
-    // Save where the condition begins.
     size_t conditionPosition = position;
 
-    // Parse once so we can locate the body.
     bool condition = ParseCondition();
 
     if (CurrentToken().type != TokenType::RIGHT_PAREN)
@@ -448,7 +533,6 @@ void Parser::ParseStrap()
 
     size_t bodyPosition = position;
 
-    // Find the token immediately after the loop body.
     int depth = 1;
 
     while (depth > 0 &&
@@ -458,7 +542,8 @@ void Parser::ParseStrap()
         {
             depth++;
         }
-        else if (CurrentToken().type == TokenType::RIGHT_BRACE)
+        else if (CurrentToken().type ==
+            TokenType::RIGHT_BRACE)
         {
             depth--;
         }
@@ -468,24 +553,242 @@ void Parser::ParseStrap()
 
     size_t afterBodyPosition = position;
 
-    // Execute while condition remains true.
     while (condition)
     {
         position = bodyPosition;
 
         ExecuteBlock();
 
-        // Re-evaluate the condition using current variable values.
         position = conditionPosition;
 
         condition = ParseCondition();
     }
 
-    // Continue after the strap block.
     position = afterBodyPosition;
+}
 
-    // Prevent unused-variable warning if warnings are enabled.
-    (void)strapPosition;
+void Parser::ParsePackage()
+{
+    Advance();
+
+    if (CurrentToken().type != TokenType::IDENTIFIER)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected a package name." << endl;
+        return;
+    }
+
+    string functionName = CurrentToken().value;
+    Advance();
+
+    if (CurrentToken().type != TokenType::LEFT_PAREN)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected '(' after package name." << endl;
+        return;
+    }
+
+    Advance();
+
+    vector<string> parameters;
+
+    if (CurrentToken().type != TokenType::RIGHT_PAREN)
+    {
+        while (true)
+        {
+            if (CurrentToken().type != TokenType::IDENTIFIER)
+            {
+                cout << "WARDROBE MALFUNCTION!" << endl;
+                cout << "Expected parameter name." << endl;
+                return;
+            }
+
+            parameters.push_back(CurrentToken().value);
+            Advance();
+
+            if (CurrentToken().type == TokenType::COMMA)
+            {
+                Advance();
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    if (CurrentToken().type != TokenType::RIGHT_PAREN)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected ')' after package parameters."
+            << endl;
+        return;
+    }
+
+    Advance();
+
+    if (CurrentToken().type != TokenType::LEFT_BRACE)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected '{' after package declaration."
+            << endl;
+        return;
+    }
+
+    Advance();
+
+    size_t bodyStart = position;
+
+    int depth = 1;
+
+    while (depth > 0 &&
+        CurrentToken().type != TokenType::END_OF_FILE)
+    {
+        if (CurrentToken().type == TokenType::LEFT_BRACE)
+        {
+            depth++;
+        }
+        else if (CurrentToken().type ==
+            TokenType::RIGHT_BRACE)
+        {
+            depth--;
+        }
+
+        Advance();
+    }
+
+    size_t bodyEnd = position - 1;
+
+    functions[functionName] =
+    {
+        parameters,
+        bodyStart,
+        bodyEnd
+    };
+
+    cout << "Packed function: "
+        << functionName
+        << endl;
+}
+
+void Parser::ParseFunctionCall()
+{
+    string functionName = CurrentToken().value;
+    Advance();
+
+    auto functionIt = functions.find(functionName);
+
+    if (functionIt == functions.end())
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Unknown package: "
+            << functionName
+            << endl;
+        return;
+    }
+
+    if (CurrentToken().type != TokenType::LEFT_PAREN)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected '(' after package name." << endl;
+        return;
+    }
+
+    Advance();
+
+    vector<double> arguments;
+
+    if (CurrentToken().type != TokenType::RIGHT_PAREN)
+    {
+        while (true)
+        {
+            double value = ParseExpression();
+            arguments.push_back(value);
+
+            if (CurrentToken().type == TokenType::COMMA)
+            {
+                Advance();
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    if (CurrentToken().type != TokenType::RIGHT_PAREN)
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Expected ')' after package arguments."
+            << endl;
+        return;
+    }
+
+    Advance();
+
+    Function& function = functionIt->second;
+
+    if (arguments.size() != function.parameters.size())
+    {
+        cout << "WARDROBE MALFUNCTION!" << endl;
+        cout << "Package "
+            << functionName
+            << " expected "
+            << function.parameters.size()
+            << " arguments, but received "
+            << arguments.size()
+            << "."
+            << endl;
+
+        return;
+    }
+
+    size_t returnPosition = position;
+
+    unordered_map<string, double> savedValues;
+    unordered_map<string, bool> existedBefore;
+
+    for (size_t i = 0;
+        i < function.parameters.size();
+        i++)
+    {
+        string parameterName = function.parameters[i];
+
+        auto existing =
+            numberVariables.find(parameterName);
+
+        if (existing != numberVariables.end())
+        {
+            existedBefore[parameterName] = true;
+            savedValues[parameterName] =
+                existing->second;
+        }
+        else
+        {
+            existedBefore[parameterName] = false;
+        }
+
+        numberVariables[parameterName] =
+            arguments[i];
+    }
+
+    position = function.bodyStart;
+
+    ExecuteBlock();
+
+    for (const string& parameterName :
+        function.parameters)
+    {
+        if (existedBefore[parameterName])
+        {
+            numberVariables[parameterName] =
+                savedValues[parameterName];
+        }
+        else
+        {
+            numberVariables.erase(parameterName);
+        }
+    }
+
+    position = returnPosition;
 }
 
 void Parser::ExecuteBlock()
@@ -501,6 +804,10 @@ void Parser::ExecuteBlock()
         {
             ParseExpose();
         }
+        else if (CurrentToken().type == TokenType::GRAB)
+        {
+            ParseGrab();
+        }
         else if (CurrentToken().type == TokenType::TIGHT)
         {
             ParseTight();
@@ -509,9 +816,20 @@ void Parser::ExecuteBlock()
         {
             ParseStrap();
         }
+        else if (CurrentToken().type == TokenType::PACKAGE)
+        {
+            ParsePackage();
+        }
         else if (CurrentToken().type == TokenType::IDENTIFIER)
         {
-            ParseAssignment();
+            if (PeekToken().type == TokenType::LEFT_PAREN)
+            {
+                ParseFunctionCall();
+            }
+            else
+            {
+                ParseAssignment();
+            }
         }
         else
         {
@@ -536,7 +854,8 @@ void Parser::SkipBlock()
         {
             depth++;
         }
-        else if (CurrentToken().type == TokenType::RIGHT_BRACE)
+        else if (CurrentToken().type ==
+            TokenType::RIGHT_BRACE)
         {
             depth--;
         }

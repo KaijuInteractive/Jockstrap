@@ -12,6 +12,8 @@ enum class TokenType
     TIGHT,
     STRAP,
     EXPOSE,
+    PACKAGE,
+    GRAB,
 
     IDENTIFIER,
     STRING,
@@ -34,6 +36,8 @@ enum class TokenType
     RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
+
+    COMMA,
 
     END_OF_FILE
 };

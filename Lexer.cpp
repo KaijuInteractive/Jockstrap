@@ -50,7 +50,8 @@ vector<Token> Lexer::Tokenize()
         if (isdigit(static_cast<unsigned char>(current)) ||
             (current == '.' &&
                 position + 1 < source.length() &&
-                isdigit(static_cast<unsigned char>(source[position + 1]))))
+                isdigit(static_cast<unsigned char>(
+                    source[position + 1]))))
         {
             string number;
             bool foundDecimal = false;
@@ -87,7 +88,8 @@ vector<Token> Lexer::Tokenize()
             string word;
 
             while (position < source.length() &&
-                (isalnum(static_cast<unsigned char>(source[position])) ||
+                (isalnum(static_cast<unsigned char>(
+                    source[position])) ||
                     source[position] == '_'))
             {
                 word += source[position];
@@ -104,6 +106,10 @@ vector<Token> Lexer::Tokenize()
                 tokens.push_back({ TokenType::STRAP, word });
             else if (word == "expose")
                 tokens.push_back({ TokenType::EXPOSE, word });
+            else if (word == "package")
+                tokens.push_back({ TokenType::PACKAGE, word });
+            else if (word == "grab")
+                tokens.push_back({ TokenType::GRAB, word });
             else
                 tokens.push_back({ TokenType::IDENTIFIER, word });
 
@@ -111,7 +117,6 @@ vector<Token> Lexer::Tokenize()
         }
 
         // Two-character comparison operators
-
         if (current == '=' &&
             position + 1 < source.length() &&
             source[position + 1] == '=')
@@ -149,7 +154,6 @@ vector<Token> Lexer::Tokenize()
         }
 
         // Single-character operators
-
         if (current == '>')
         {
             tokens.push_back({ TokenType::GREATER, ">" });
@@ -200,7 +204,6 @@ vector<Token> Lexer::Tokenize()
         }
 
         // Grouping
-
         if (current == '(')
         {
             tokens.push_back({ TokenType::LEFT_PAREN, "(" });
@@ -225,6 +228,13 @@ vector<Token> Lexer::Tokenize()
         if (current == '}')
         {
             tokens.push_back({ TokenType::RIGHT_BRACE, "}" });
+            position++;
+            continue;
+        }
+
+        if (current == ',')
+        {
+            tokens.push_back({ TokenType::COMMA, "," });
             position++;
             continue;
         }

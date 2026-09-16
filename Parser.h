@@ -8,6 +8,13 @@
 
 using namespace std;
 
+struct Function
+{
+    vector<string> parameters;
+    size_t bodyStart;
+    size_t bodyEnd;
+};
+
 class Parser
 {
 public:
@@ -21,15 +28,23 @@ private:
 
     unordered_map<string, string> variables;
     unordered_map<string, double> numberVariables;
+    unordered_map<string, Function> functions;
 
     Token CurrentToken();
+    Token PeekToken();
+
     void Advance();
 
     void ParseVariableDeclaration();
     void ParseAssignment();
     void ParseExpose();
+    void ParseGrab();
+
     void ParseTight();
     void ParseStrap();
+
+    void ParsePackage();
+    void ParseFunctionCall();
 
     double ParseExpression();
     double ParseTerm();

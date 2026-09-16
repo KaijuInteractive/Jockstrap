@@ -1,11 +1,246 @@
-briefs x = 1
+expose "========================================"
+expose "          ESCAPE THE LOCKER ROOM"
+expose "        A Game Written in Jockstrap"
+expose "========================================"
+expose ""
 
-expose "Strapping in..."
+briefs name = ""
+briefs choice = 0
+briefs courage = 5
+briefs key = 0
+briefs escaped = 0
 
-strap (x < 6)
+expose "You wake up on the cold tile floor."
+expose "Rows of lockers surround you."
+expose ""
+expose "You have absolutely no idea how you got here."
+expose ""
+expose "What is your name?"
+grab name
+
+expose ""
+expose "Welcome to the locker room,"
+expose name
+expose ""
+expose "A locked door stands at the far end."
+expose "Beside you is an old wooden bench."
+expose ""
+expose "What do you do?"
+expose "1 - Search the bench."
+expose "2 - Inspect the lockers."
+expose "3 - Try the door."
+grab choice
+
+tight (choice == 1)
 {
-    expose x
-    x = x + 1
+    expose ""
+    expose "You crouch beside the bench."
+    expose "Something metallic glints underneath it."
+    expose ""
+    expose "You found a key!"
+
+    key = 1
+    courage = courage + 2
 }
 
-expose "Strap released."
+tight (choice == 2)
+{
+    expose ""
+    expose "You begin opening lockers."
+    expose "Most of them are empty."
+    expose ""
+    expose "Then one suddenly SLAMS shut."
+    expose ""
+    expose "You decide you have inspected enough lockers."
+
+    courage = courage - 1
+}
+
+tight (choice == 3)
+{
+    expose ""
+    expose "You pull on the door."
+    expose ""
+    expose "Locked."
+    expose ""
+    expose "Naturally."
+
+    courage = courage - 1
+}
+
+expose ""
+expose "You hear footsteps outside."
+expose ""
+expose "You need to get out."
+expose ""
+expose "1 - Search beneath the bench."
+expose "2 - Search the lockers."
+expose "3 - Try the door again."
+grab choice
+
+tight (choice == 1)
+{
+    tight (key == 0)
+    {
+        expose ""
+        expose "You search underneath the bench."
+        expose ""
+        expose "There is a small brass key taped underneath."
+
+        key = 1
+    }
+    bulge
+    {
+        expose ""
+        expose "You already searched there."
+    }
+}
+
+tight (choice == 2)
+{
+    expose ""
+    expose "You search the lockers more carefully."
+
+    tight (courage >= 5)
+    {
+        expose "You find a note."
+        expose ""
+        expose "DON'T TRUST THE JOCKSTRAP."
+    }
+    bulge
+    {
+        expose "Another locker slams shut."
+        expose "Nope."
+        expose "Absolutely not."
+
+        courage = courage - 1
+    }
+}
+
+tight (choice == 3)
+{
+    expose ""
+    expose "You hurry to the door."
+
+    tight (key == 1)
+    {
+        expose "The key slides into the lock."
+        expose ""
+        expose "CLICK."
+        expose ""
+        expose "The door opens."
+
+        escaped = 1
+    }
+    bulge
+    {
+        expose "Still locked."
+        expose ""
+        expose "You need a key."
+    }
+}
+
+strap (escaped == 0)
+{
+    expose ""
+    expose "The footsteps are getting closer."
+    expose ""
+    expose "What do you do?"
+    expose "1 - Search beneath the bench."
+    expose "2 - Search the lockers."
+    expose "3 - Try the door."
+    grab choice
+
+    tight (choice == 1)
+    {
+        tight (key == 0)
+        {
+            expose ""
+            expose "You reach beneath the bench."
+            expose ""
+            expose "Your fingers touch something cold."
+            expose ""
+            expose "A KEY."
+
+            key = 1
+        }
+        bulge
+        {
+            expose ""
+            expose "Nothing else is under the bench."
+        }
+    }
+
+    tight (choice == 2)
+    {
+        expose ""
+        expose "You search another locker."
+        expose ""
+        expose "Inside is a single folded jockstrap."
+        expose ""
+        expose "You stare at it."
+        expose ""
+        expose "It stares back."
+
+        courage = courage - 1
+
+        tight (courage <= 0)
+        {
+            expose ""
+            expose "You have had enough of this place."
+            expose "Your survival instincts activate."
+            expose ""
+            expose "Somehow, your terror makes you stronger."
+
+            courage = 5
+        }
+    }
+
+    tight (choice == 3)
+    {
+        expose ""
+        expose "You grab the door handle."
+
+        tight (key == 1)
+        {
+            expose ""
+            expose "You unlock the door."
+            expose ""
+            expose "CLICK."
+            expose ""
+            expose "Freedom."
+
+            escaped = 1
+        }
+        bulge
+        {
+            expose ""
+            expose "Locked."
+            expose ""
+            expose "The footsteps are closer now."
+        }
+    }
+}
+
+expose ""
+expose "========================================"
+expose "                 ESCAPED"
+expose "========================================"
+expose ""
+expose "You step into the hallway."
+expose ""
+expose "The locker-room door closes behind you."
+expose ""
+expose "Then you hear a voice from inside."
+expose ""
+expose "Nice package."
+expose ""
+expose "You decide not to investigate."
+expose ""
+expose "FINAL COURAGE:"
+expose courage
+expose ""
+expose "Thanks for playing,"
+expose name
+expose ""
+expose "Everything looks snug."
