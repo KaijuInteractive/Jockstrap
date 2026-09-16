@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Jockstrap.vcxproj" />
+  <Project Path="Jockstrap.vcxproj" Id="410a5a0f-5555-4b77-92aa-8be2972374e9" />
 </Solution>
