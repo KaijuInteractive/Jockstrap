@@ -27,6 +27,7 @@ string TokenTypeToString(TokenType type)
     case TokenType::LEFT_BRACE:  return "LEFT_BRACE";
     case TokenType::RIGHT_BRACE: return "RIGHT_BRACE";
     case TokenType::END_OF_FILE: return "END_OF_FILE";
+    case TokenType::PLUS:        return "PLUS";
     }
 
     return "UNKNOWN";

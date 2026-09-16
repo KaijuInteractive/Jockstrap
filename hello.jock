@@ -1,2 +1,2 @@
-briefs message = "Ganymede, we did it!!"
-expose message
+briefs x = 10
+expose x + 5

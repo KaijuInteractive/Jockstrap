@@ -45,6 +45,22 @@ vector<Token> Lexer::Tokenize()
             continue;
         }
 
+        // Numbers
+        if (isdigit(static_cast<unsigned char>(current)))
+        {
+            string number;
+
+            while (position < source.length() &&
+                isdigit(static_cast<unsigned char>(source[position])))
+            {
+                number += source[position];
+                position++;
+            }
+
+            tokens.push_back({ TokenType::NUMBER, number });
+            continue;
+        }
+
         // Words: keywords and identifiers
         if (isalpha(static_cast<unsigned char>(current)) || current == '_')
         {
@@ -75,6 +91,14 @@ vector<Token> Lexer::Tokenize()
         }
 
         // Single-character symbols
+
+        if (current == '+')
+        {
+            tokens.push_back({ TokenType::PLUS, "+" });
+            position++;
+            continue;
+        }
+
         if (current == '=')
         {
             tokens.push_back({ TokenType::EQUALS, "=" });

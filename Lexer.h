@@ -22,6 +22,7 @@ enum class TokenType
     RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
+    PLUS,
 
     END_OF_FILE
 };

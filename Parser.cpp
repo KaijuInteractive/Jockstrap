@@ -63,24 +63,41 @@ void Parser::ParseVariableDeclaration()
 
     Advance();
 
-    if (CurrentToken().type != TokenType::STRING)
+    if (CurrentToken().type == TokenType::STRING)
     {
-        cout << "WARDROBE MALFUNCTION!" << endl;
-        cout << "Expected a string value." << endl;
+        string value = CurrentToken().value;
+        Advance();
+
+        variables[variableName] = value;
+
+        cout << "Created briefs: "
+            << variableName
+            << " = \""
+            << value
+            << "\""
+            << endl;
+
         return;
     }
 
-    string value = CurrentToken().value;
-    Advance();
+    if (CurrentToken().type == TokenType::NUMBER)
+    {
+        double value = stod(CurrentToken().value);
+        Advance();
 
-    variables[variableName] = value;
+        numberVariables[variableName] = value;
 
-    cout << "Created briefs: "
-        << variableName
-        << " = \""
-        << value
-        << "\""
-        << endl;
+        cout << "Created briefs: "
+            << variableName
+            << " = "
+            << value
+            << endl;
+
+        return;
+    }
+
+    cout << "WARDROBE MALFUNCTION!" << endl;
+    cout << "Expected a string or number." << endl;
 }
 
 void Parser::ParseExpose()
@@ -88,22 +105,59 @@ void Parser::ParseExpose()
     // Skip "expose"
     Advance();
 
-    if (CurrentToken().type != TokenType::IDENTIFIER)
+    // Strings are printed directly
+    if (CurrentToken().type == TokenType::STRING)
     {
-        cout << "WARDROBE MALFUNCTION!" << endl;
-        cout << "Expected something to expose." << endl;
+        cout << CurrentToken().value << endl;
+        Advance();
         return;
     }
 
-    string variableName = CurrentToken().value;
-    Advance();
+    // Everything else is treated as a numeric expression
+    double result = ParseExpression();
+    cout << result << endl;
+}
 
-    if (variables.find(variableName) == variables.end())
+double Parser::ParseExpression()
+{
+    double left = 0;
+
+    // Get the left side
+    if (CurrentToken().type == TokenType::NUMBER)
     {
-        cout << "WARDROBE MALFUNCTION!" << endl;
-        cout << "Unknown briefs: " << variableName << endl;
-        return;
+        left = stod(CurrentToken().value);
+        Advance();
+    }
+    else if (CurrentToken().type == TokenType::IDENTIFIER)
+    {
+        string variableName = CurrentToken().value;
+        Advance();
+
+        if (numberVariables.find(variableName) != numberVariables.end())
+        {
+            left = numberVariables[variableName];
+        }
+        else
+        {
+            cout << "WARDROBE MALFUNCTION!" << endl;
+            cout << "Unknown numeric briefs: " << variableName << endl;
+            return 0;
+        }
+    }
+    else
+    {
+        return 0;
     }
 
-    cout << variables[variableName] << endl;
+    // Do we have a + ?
+    if (CurrentToken().type == TokenType::PLUS)
+    {
+        Advance();
+
+        double right = ParseExpression();
+
+        return left + right;
+    }
+
+    return left;
 }
