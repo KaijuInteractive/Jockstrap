@@ -24,7 +24,7 @@ The project explores the fundamentals of language design, including lexical anal
 | `BRIEFS` | Declare a variable |
 | `EXPOSE` | Print/output |
 | `TIGHT` | Conditional (`if`) |
-| `STRAP` | Loop (`while`) |
+| `STRAP` | Loop (`while`) Planned |
 
 ## 💻 Example
 
